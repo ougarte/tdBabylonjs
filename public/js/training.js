@@ -22,6 +22,7 @@ class CameraFactory {
         // const camera = new BABYLON.FreeCamera(cameraName, cameraPosition, scene);
         const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
         // const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 0, 0), scene);
+        // camera.rotationOffset = 180;
         return camera;
     }
 }
@@ -32,6 +33,25 @@ class SceneFactory {
         scene.clearColor = new BABYLON.Color3(.486, .714, .427);
 
         return scene;
+    }
+}
+
+const MeshCollection = [];
+class MeshManager {
+    static createSphere(scene, options) {
+        let sphere = BABYLON.Mesh.CreateSphere(options.name, options.segments, options.size, scene);
+        sphere.position = options.position;
+
+        if(options.material) {
+            let material = new BABYLON.StandardMaterial(options.material.name, scene);
+            let color = new BABYLON.Color3(options.material.color.red, options.material.color.green, options.material.color.blue);
+
+            material.diffuseColor = color;
+            material.alpha = options.material.alpha;
+            sphere.material = material;
+        }
+
+        MeshCollection.push(sphere);
     }
 }
 
@@ -46,14 +66,15 @@ $(function() {
     camera.attachControl(canvas.element, false);
     // camera.attachControl(canvas.element, noPreventDefault, useCtrlForPanning);
 
+    // const ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+    // camera.lockedTarget = sphereX;
+
     const light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = .5;
 
-    // const sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
-    // sphere.position.y = 1;
-
-    // const ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
-    // camera.lockedTarget = sphere;
+    spheredb.forEach((sphere) => {
+        MeshManager.createSphere(scene, sphere);
+    });
 
     const lineX = BABYLON.Mesh.CreateLines("lineX", [
         new BABYLON.Vector3(-10, 0, 0),
