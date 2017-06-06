@@ -7,6 +7,9 @@ class Canvas {
     }
 }
 
+/**
+ *
+ */
 class EngineFactory {
     static create(canvas) {
         const engine = new BABYLON.Engine(canvas.element, true);
@@ -15,12 +18,15 @@ class EngineFactory {
     }
 }
 
+/**
+ *
+ */
 class CameraFactory {
     static create(name, position, canvas, scene) {
         const cameraName = name || "default"; 
-        const cameraPosition = position || new BABYLON.Vector3(0, 0, -45);
+        const cameraPosition = position || new BABYLON.Vector3(45, 45, 45);
         // const camera = new BABYLON.FreeCamera(cameraName, cameraPosition, scene);
-        const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
+        const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 1, 1, 30, BABYLON.Vector3.Zero(), scene);
         // const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 0, 0), scene);
         // camera.rotationOffset = 180;
         return camera;
@@ -36,6 +42,9 @@ class SceneFactory {
     }
 }
 
+/**
+ *
+ */
 const MeshCollection = [];
 class MeshManager {
     static createSphere(scene, options) {
@@ -53,8 +62,23 @@ class MeshManager {
 
         MeshCollection.push(sphere);
     }
+
+    static createLine(scene, options) {
+        const vectors = [];
+
+        options.vectors.forEach((vector) => {
+            let vector3d = new BABYLON.Vector3(vector.x, vector.y, vector.z);
+            vectors.push(vector3d);
+        });
+
+        const line = BABYLON.Mesh.CreateLines(options.name, vectors, scene);
+        MeshCollection.push(line);
+    }
 }
 
+/**
+ *
+ */
 $(function() {
     const canvas = new Canvas('main');
     const engine = EngineFactory.create(canvas);
@@ -76,20 +100,9 @@ $(function() {
         MeshManager.createSphere(scene, sphere);
     });
 
-    const lineX = BABYLON.Mesh.CreateLines("lineX", [
-        new BABYLON.Vector3(-10, 0, 0),
-        new BABYLON.Vector3(10, 0, 0)
-    ], scene);
-
-    const lineY = BABYLON.Mesh.CreateLines("lineY", [
-        new BABYLON.Vector3(0, -10, 0),
-        new BABYLON.Vector3(0, 10, 0)
-    ], scene);
-
-    const lineZ = BABYLON.Mesh.CreateLines("lineZ", [
-        new BABYLON.Vector3(0, 0, -10),
-        new BABYLON.Vector3(0, 0, 10)
-    ], scene);
+    linedb.forEach((line) => {
+        MeshManager.createLine(scene, line);
+    });
 
     engine.runRenderLoop(function () {
         scene.render();

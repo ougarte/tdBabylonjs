@@ -1,5 +1,6 @@
 const spheredb = [
     {
+        id: 1,
         name: 'sXPositive',
         segments: 100,
         size: 1,
@@ -19,6 +20,7 @@ const spheredb = [
         }
     },
     {
+        id: 2,
         name: 'sXNegative',
         segments: 100,
         size: 1,
@@ -38,6 +40,7 @@ const spheredb = [
         }
     },
     {
+        id: 3,
         name: 'sYPositive',
         segments: 100,
         size: 1,
@@ -57,6 +60,7 @@ const spheredb = [
         }
     },
     {
+        id: 4,
         name: 'sYNegative',
         segments: 100,
         size: 1,
@@ -76,6 +80,7 @@ const spheredb = [
         }
     },
     {
+        id: 5,
         name: 'sZPositive',
         segments: 100,
         size: 1,
@@ -95,6 +100,7 @@ const spheredb = [
         }
     },
     {
+        id: 6,
         name: 'sZNegative',
         segments: 100,
         size: 1,
