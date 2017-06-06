@@ -4,6 +4,30 @@
 class Canvas {
     constructor(idSelector) {
         this.element = $(`#${idSelector}`)[0];
+        this.listeners = [];
+    }
+
+    addEvent(event) {
+        this.element.addEventListener(event.name, event.listener, false);
+        this.listeners[event.name] = event.listener;
+    }
+
+    removeEvent(event) {
+        this.element.removeEventListener(event.name, event.listener);
+    }
+
+    removeEvents() {
+        const element = this.element;
+        this.listeners.forEach((listener, name) => {
+            element.removeEvent({name:name, listener: listener});
+        });
+    }
+}
+
+class CanvasEvent {
+    constructor(name, listener) {
+        this.name = name;
+        this.listener = listener;
     }
 }
 
@@ -12,9 +36,12 @@ class Canvas {
  */
 class EngineFactory {
     static create(canvas) {
-        const engine = new BABYLON.Engine(canvas.element, true);
+        if (EngineFactory.instance) return EngineFactory.instance;
+        if (!canvas || !canvas.element) throw new Error('Canvas is required');
 
-        return engine;
+        EngineFactory.instance = new BABYLON.Engine(canvas.element, true);
+
+        return EngineFactory.instance;
     }
 }
 
@@ -24,9 +51,9 @@ class EngineFactory {
 class CameraFactory {
     static create(name, position, canvas, scene) {
         const cameraName = name || "default"; 
-        const cameraPosition = position || new BABYLON.Vector3(45, 45, 45);
+        // const cameraPosition = position || new BABYLON.Vector3(45, 45, 45);
         // const camera = new BABYLON.FreeCamera(cameraName, cameraPosition, scene);
-        const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 1, 1, 30, BABYLON.Vector3.Zero(), scene);
+        const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 0, 0, 0, BABYLON.Vector3.Zero(), scene);
         // const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 0, 0), scene);
         // camera.rotationOffset = 180;
         return camera;
@@ -34,9 +61,15 @@ class CameraFactory {
 }
 
 class SceneFactory {
-    static create(canvas, engine) {
+    static create(engine, options) {
         const scene = new BABYLON.Scene(engine);
-        scene.clearColor = new BABYLON.Color3(.486, .714, .427);
+        let color = new BABYLON.Color3(.486, .714, .427);
+        
+        if(options && options.color) {
+            color = new BABYLON.Color3(options.color.red, options.color.green, options.color.blue);
+        }
+
+        scene.clearColor = color;
 
         return scene;
     }
@@ -60,6 +93,8 @@ class MeshManager {
             sphere.material = material;
         }
 
+        sphere.metadata = { type: 'sphere' }
+
         MeshCollection.push(sphere);
     }
 
@@ -72,6 +107,7 @@ class MeshManager {
         });
 
         const line = BABYLON.Mesh.CreateLines(options.name, vectors, scene);
+        line.metadata = { type: 'line' }
         MeshCollection.push(line);
     }
 }
@@ -82,30 +118,71 @@ class MeshManager {
 $(function() {
     const canvas = new Canvas('main');
     const engine = EngineFactory.create(canvas);
-    const scene = SceneFactory.create(canvas, engine);
+    const scene = SceneFactory.create(engine, {color: {red: .186, green: .714, blue: .427}});
     const camera = CameraFactory.create(null, null, canvas, scene);
 
     // scene.activeCamera.panningSensibility = 0;
     // camera.setTarget(BABYLON.Vector3.Zero());
     camera.attachControl(canvas.element, false);
+    camera.setPosition(new BABYLON.Vector3(20, 20, 20));
     // camera.attachControl(canvas.element, noPreventDefault, useCtrlForPanning);
 
-    // const ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+    const ground = BABYLON.Mesh.CreateGround("ground1", 10, 10, 2, scene);
     // camera.lockedTarget = sphereX;
 
     const light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = .5;
 
-    spheredb.forEach((sphere) => {
-        MeshManager.createSphere(scene, sphere);
-    });
-
-    linedb.forEach((line) => {
-        MeshManager.createLine(scene, line);
-    });
-
-    engine.runRenderLoop(function () {
+    spheredb.forEach(sphere =>  MeshManager.createSphere(scene, sphere));
+    linedb.forEach(line => MeshManager.createLine(scene, line));
+    engine.runRenderLoop(() => {
         scene.render();
     });
+
+    /**
+     * Canvas Events
+     */
+    let followCamera;
+    const sphereConstraint = (mesh) => { return mesh.metadata && mesh.metadata.type === 'sphere'; }
+    const getPickedMesh = (event, scene) => {
+        let pickInfo = scene.pick(scene.pointerX, scene.pointerY, sphereConstraint);
+
+        if (event.button) return;
+        if (!pickInfo || !pickInfo.hit) return;
+
+        return pickInfo;
+    }
+
+    const pointerDownEvent = new CanvasEvent('pointerdown', (event)=> {
+        const pickInfo = getPickedMesh(event, scene);
+
+        if (!pickInfo) return;
+
+        const currentMesh = pickInfo.pickedMesh;
+        currentMesh.scaling.x *= 2;
+        currentMesh.scaling.y *= 2;
+        currentMesh.scaling.z *= 2;
+    });
+
+    const pointerUpEvent = new CanvasEvent('pointerup', (event)=> {
+        const pickInfo = getPickedMesh(event, scene);
+
+        if (!pickInfo) return;
+
+        const currentMesh = pickInfo.pickedMesh;
+        currentMesh.scaling.x /= 2;
+        currentMesh.scaling.y /= 2;
+        currentMesh.scaling.z /= 2;
+    });
+
+    canvas.addEvent(pointerDownEvent);
+    canvas.addEvent(pointerUpEvent);
+
+    /**
+     * Creating an specific scene
+     */
+    scene.onDispose = function() {
+        canvas.removeEvents();
+    };
 
 });
