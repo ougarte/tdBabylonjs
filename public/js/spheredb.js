@@ -17,7 +17,60 @@ const spheredb = [
                 blue: 0.0
             },
             alpha: 1.0
-        }
+        },
+        animations: [
+            {
+                id: 1,
+                name: "animationOne",
+                property: "scaling.x",
+                frames: 30,
+                type: BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                behavior: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
+                keys: [
+                    {frame: 0, value: 1},
+                    {frame: 2, value: .8},
+                    {frame: 4, value: .6},
+                    {frame: 6, value: .4},
+                    {frame: 7, value: .6},
+                    {frame: 8, value: .8},
+                    {frame: 10, value: 1}
+                ]
+            },
+            {
+                id: 2,
+                name: "animationTwo",
+                property: "scaling.y",
+                frames: 30,
+                type: BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                behavior: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
+                keys: [
+                    {frame: 0, value: 1},
+                    {frame: 2, value: .8},
+                    {frame: 4, value: .6},
+                    {frame: 6, value: .4},
+                    {frame: 7, value: .6},
+                    {frame: 8, value: .8},
+                    {frame: 10, value: 1}
+                ]
+            },
+            {
+                id: 3,
+                name: "animationThree",
+                property: "scaling.z",
+                frames: 30,
+                type: BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                behavior: BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE,
+                keys: [
+                    {frame: 0, value: 1},
+                    {frame: 2, value: .8},
+                    {frame: 4, value: .6},
+                    {frame: 6, value: .4},
+                    {frame: 7, value: .6},
+                    {frame: 8, value: .8},
+                    {frame: 10, value: 1}
+                ]
+            }
+        ]
     },
     {
         id: 2,
